@@ -10,6 +10,8 @@ module Nimbus
     extend Api
 
     def initialize(options = {})
+      options["api_xml"] = File.dirname(__FILE__) + "/commands.xml"
+      p options
       configure(options)
     end
 

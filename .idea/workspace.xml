@@ -2,18 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="03dcb890-438c-4981-8c20-3dc3175ffe60" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Gemfile" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/LICENSE" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/README.md" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Rakefile" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/nimbus" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/nimbus.rb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/nimbus/api.rb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/nimbus/cli.rb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/nimbus/helpers.rb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/nimbus/version.rb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/nimbus.gemspec" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/commands.xml" afterPath="$PROJECT_DIR$/lib/nimbus/commands.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bin/nimbus" afterPath="$PROJECT_DIR$/bin/nimbus" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/nimbus/cli.rb" afterPath="$PROJECT_DIR$/lib/nimbus/cli.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nimbus.gemspec" afterPath="$PROJECT_DIR$/nimbus.gemspec" />
     </list>
     <ignored path="nimbus.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -44,19 +37,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="cli.rb" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="cli.rb" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/nimbus/cli.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="7" column="5" selection-start="87" selection-end="87" vertical-scroll-proportion="0.0">
+            <state line="13" column="15" selection-start="242" selection-end="242" vertical-scroll-proportion="0.24749164">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="nimbus" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="nimbus" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bin/nimbus">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="10" selection-start="177" selection-end="177" vertical-scroll-proportion="0.15050167">
+            <state line="3" column="0" selection-start="42" selection-end="42" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -97,8 +90,8 @@
         <option value="$PROJECT_DIR$/lib/nimbus/helpers.rb" />
         <option value="$PROJECT_DIR$/lib/nimbus.rb" />
         <option value="$PROJECT_DIR$/lib/nimbus/api.rb" />
-        <option value="$PROJECT_DIR$/lib/nimbus/cli.rb" />
         <option value="$PROJECT_DIR$/bin/nimbus" />
+        <option value="$PROJECT_DIR$/lib/nimbus/cli.rb" />
       </list>
     </option>
   </component>
@@ -214,6 +207,11 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/lib/nimbus" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration default="true" type="RSpecRunConfigurationType" factoryName="RSpec">
@@ -386,16 +384,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/nimbus/cli.rb">
+    <entry file="file://$PROJECT_DIR$/bin/nimbus">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="5" selection-start="87" selection-end="87" vertical-scroll-proportion="0.0">
+        <state line="3" column="0" selection-start="42" selection-end="42" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bin/nimbus">
+    <entry file="file://$PROJECT_DIR$/lib/nimbus/cli.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="10" selection-start="177" selection-end="177" vertical-scroll-proportion="0.15050167">
+        <state line="13" column="15" selection-start="242" selection-end="242" vertical-scroll-proportion="0.24749164">
           <folding />
         </state>
       </provider>
