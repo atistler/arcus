@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require 'nimbus/cli'
+require 'gem'
+
+api_file = Gem::GemPathSearcher.new.lib_dirs_for(Gem::Specification.find_by_name('nimbus')) + '/commands.xml'
+p api_file
+nimbus = Nimbus::Cli.new(
+    :api_xml => api_file,
+    :api_uri => URI('http://icloud-staging-api.logicworks.net:8096/client/api'),
+    :default_response => "json"
+)
+
+nimbus.run
