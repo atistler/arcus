@@ -1,7 +1,6 @@
 require "nimbus/version"
+require "nimbus/api"
 
-
-require 'rake'
 
 
 
