@@ -1,29 +1,37 @@
 #!/usr/bin/env ruby
 
 require 'arcus/cli'
+require 'uri'
 require 'yaml'
 
+RC_FILE = "#{Dir.home}/.arcusrc"
 
-rc_file = "#{Dir.home}/.arcusrc"
 $settings = {}
-if (File.exists? rc_file)
-  $settings = YAML.load_file(rc_file)
+if (File.exists? RC_FILE)
+  $settings = YAML.load_file(RC_FILE)
 end
 
 def process_env(setting, key)
-  if ENV.has_key?(key) && ! ENV[key].empty?
+  if ENV.has_key?(key) && !ENV[key].empty?
     $settings[setting] = ENV[key]
   end
 end
 
 process_env("api_uri", "ARCUS_API_URI")
 process_env("default_response", "ARCUS_DEFAULT_RESPONSE")
+process_env("api_key", "ARCUS_API_KEY")
+process_env("api_secret", "ARCUS_API_SECRET")
 
-error = if ! $settings.has_key? "api_uri"
-  "API URI must me set in either #{rc_file} or as a environmental variable (ARCUS_API_URI)"
-elsif ! $settings.has_key? "default_response"
-  "Default response must me set in either #{rc_file} or as a environmental variable (ARCUS_DEFAULT_RESPONSE)"
-end
+error = case
+          when !$settings.has_key?("api_uri")
+            "API URI must me set in either #{rc_file} or as a environmental variable (ARCUS_API_URI)"
+          when !$settings.has_key?("default_response")
+            "Default response must me set in either #{rc_file} or as a environmental variable (ARCUS_DEFAULT_RESPONSE)"
+          when $settings["api_key"] && !$settings["api_secret"]
+            "API Secret must be set when using an API Key"
+          when $settings["api_secret"] && !settings["api_key"]
+            "API Key must be set when using an API Secret"
+        end
 
 if error
   puts error
@@ -32,7 +40,9 @@ end
 
 arcus = Arcus::Cli.new(
     :api_uri => URI($settings["api_uri"]),
-    :default_response => $settings["default_response"]
+    :default_response => $settings["default_response"],
+    :api_key => $settings["api_key"],
+    :api_secret => $settings["api_secret"]
 )
 
 arcus.run

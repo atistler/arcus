@@ -8,8 +8,12 @@ module Arcus
     include Api
 
     def initialize(options = {})
-      options[:api_xml] = File.dirname(__FILE__) + "/commands.xml"
-      Api.configure(options)
+      Api.configure do |c|
+        c.api_uri = options[:api_uri] if options[:api_uri]
+        c.api_key = options[:api_key] if options[:api_key]
+        c.api_secret = options[:api_secret] if options[:api_secret]
+        c.default_response = options[:default_response] if options[:default_response]
+      end
     end
 
     def word_wrap(text, *args)
@@ -51,7 +55,7 @@ module Arcus
       cmd.program_version = [0, 0, 1]
       cmd.options = CmdParse::OptionParserWrapper.new do |opt|
         opt.separator "Global options:"
-        opt.on("--verbose", "Be verbose when outputting info") { Arcus::Api.verbose = true }
+        opt.on("--verbose", "Be verbose when outputting info") { Arcus::Api.settings.verbose = true }
       end
       cmd.add_command(CmdParse::HelpCommand.new)
       cmd.add_command(CmdParse::VersionCommand.new)
@@ -97,7 +101,7 @@ module Arcus
             missing_params = a.required_args.map { |n| n["name"].to_sym } - required_params.keys
             if (missing_params.empty?)
               begin
-                response_type = optional_params[:response] || Api.default_response
+                response_type = optional_params[:response] || Api.settings.default_response
                 if a.sync
                   result = a.prepare(required_params.merge(optional_params)).fetch
                   job_id = result["#{a.name.downcase}response"]["jobid"]
@@ -111,7 +115,7 @@ module Arcus
                   end
                   puts AsyncJobResult.new.query({:jobid => job_id}).fetch(response_type.to_sym)
                 else
-                  puts a.prepare(required_params.merge(optional_params)).fetch(response_type.to_sym)
+                  puts a.new.prepare(required_params.merge(optional_params)).fetch(response_type.to_sym)
                 end
               rescue Timeout::Error => e
                 puts "Timeout connecting to #{e.api_uri}"

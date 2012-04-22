@@ -20,23 +20,25 @@ module Arcus
   module Api
 
     @@targets = []
-    @@verbose = false
-    @@default_response = "json"
 
-    def self.verbose=(val)
-      @@verbose = val
+    class Settings
+      attr_accessor :api_uri, :api_xml, :api_key, :api_secret, :default_response, :verbose
+
+      def initialize
+        @api_xml = File.dirname(__FILE__) + "/commands.xml"
+        @default_response = "json"
+        @verbose = false;
+      end
     end
 
-    def self.verbose
-      @@verbose
+    @@settings = Settings.new
+
+    def self.settings
+      @@settings
     end
 
-    def self.default_response=(val)
-      @@default_response = val
-    end
-
-    def self.default_response
-      @@default_response
+    def self.settings=(val)
+      @@settings = val
     end
 
     def self.targets
@@ -64,8 +66,8 @@ module Arcus
         http = Net::HTTP.new(@api_uri.host, @api_uri.port)
         http.read_timeout = 5
         http.open_timeout = 1
-        req_url = api_uri.path + "?" + URI.encode_www_form(params.merge({:command => @command_name}))
-        Arcus.log.debug { "Sending: #{req_url}" } if Api.verbose == true
+        req_url = @api_uri.path + "?" + URI.encode_www_form(params.merge({:command => @command_name}))
+        Arcus.log.debug { "Sending: #{req_url}" } if Api.settings.verbose
         response = begin
           http.get(req_url)
         rescue Timeout::Error => e
@@ -77,7 +79,7 @@ module Arcus
           e.api_uri = @api_uri
           raise e
         end
-        Arcus.log.debug { "Received: #{response.body}" } if Api.verbose == true
+        Arcus.log.debug { "Received: #{response.body}" } if Api.settings.verbose
         response.instance_eval do
           class << self
             attr_accessor :response_type
@@ -121,6 +123,15 @@ module Arcus
       end
     end
 
+    class Scope
+      attr_accessor :options
+
+      def initialize(options = {})
+        @options = options;
+      end
+    end
+
+
     def self.parse_action(name)
       action, target = name.split(/([A-Z].*)/, 2)
       target = "User" if %w(login logout).include?(action)
@@ -128,7 +139,7 @@ module Arcus
       [action, target]
     end
 
-    def self.load_config(api_xml)
+    def self.load_config_file(api_xml)
       contents = File.read(api_xml).to_s
       md5 = Digest::MD5.hexdigest(contents)
       api_xml_basename = File.basename(api_xml)
@@ -148,20 +159,25 @@ module Arcus
       config
     end
 
-    def self.configure(options = {})
+    def scoped(options = {})
+      yield Scope.new(options = {})
+    end
+
+    def self.configure
       Arcus.log = Logger.new(STDOUT)
       Arcus.log.level = Logger::DEBUG
       Arcus.log.formatter = proc do |severity, datetime, progname, msg|
         "#{severity} - #{datetime}: #{msg}\n"
       end
-      api_xml = options[:api_xml] || (raise ArgumentError, "api_xml file: commands.xml file location required")
-      api_uri = options[:api_uri] || (raise ArgumentError, "api_uri: URI of API required")
-      @@default_response = options[:default_response] if options[:default_response]
-      to_name = lambda { |a| a["name"].to_sym }
 
-      config = self.load_config(api_xml)
+      yield(self.settings)
 
-      config["commands"]["command"].each do |c|
+      self.settings.api_xml || (raise ArgumentError, "api_xml file: commands.xml file location required")
+      self.settings.api_uri || (raise ArgumentError, "api_uri: URI of API required")
+
+      api_config = self.load_config_file(self.settings.api_xml)
+
+      api_config["commands"]["command"].each do |c|
         command_name = c["name"]
         command_desc = c["description"]
         command_async = c["isAsync"] == "true" ? true : false
@@ -182,9 +198,6 @@ module Arcus
         required_args = all_args.select { |a| a["required"] == "true" }
         optional_args = all_args.select { |a| a["required"] == "false" }
 
-        all_names = all_args.map(&to_name)
-        required_names = required_args.map(&to_name)
-
         def self.class_exists?(class_name)
           c = self.const_get(class_name)
           return c.is_a?(Class)
@@ -204,30 +217,30 @@ module Arcus
 
         if !self.class_exists?(target)
           target_clazz = self.create_class(target, Target) do
-            cattr_accessor :actions, :opts
-            self.actions = self.opts = []
+            cattr_accessor :actions
+            self.actions = []
           end
           @@targets << target_clazz
+
         else
           target_clazz = self.get_class(target)
         end
 
-
         target_clazz.class_eval do
+
           if !class_exists?(action.capitalize)
             action_clazz = create_class(action.capitalize, Action) do
-              cattr_accessor :opts
-              self.opts = []
-            end
-            target_clazz.actions << action_clazz
-          else
-            action_clazz = get_class(action.capitalize)
-          end
-          action_clazz.class_eval do
-            class << self
-              attr_accessor :name, :description, :is_async,
-                            :required_args, :optional_args,
-                            :action_name, :api_uri, :sync
+              cattr_accessor :name, :description, :is_async,
+                             :required_args, :optional_args,
+                             :action_name, :sync
+
+              self.name = command_name
+              self.description = command_desc
+              self.action_name = action
+              self.required_args = required_args
+              self.optional_args = optional_args
+              self.is_async = command_async
+              self.sync = false
 
               def prepare!(params = {}, callbacks = {})
                 check_args(params, all_names, required_names)
@@ -235,26 +248,18 @@ module Arcus
               end
 
               def prepare(params = {}, callbacks = {})
-                params[:response] ||= Api.default_response
-                Request.new(self.name, params, self.api_uri, callbacks)
+                params[:response] ||= Api.settings.default_response
+                Request.new(self.name, params, Api.settings.api_uri, callbacks)
               end
             end
-          end
-          action_clazz.name = command_name
-          action_clazz.description = command_desc
-          action_clazz.action_name = action
-          action_clazz.required_args = required_args
-          action_clazz.optional_args = optional_args
-          action_clazz.api_uri = api_uri
-          action_clazz.is_async = command_async
-          action_clazz.sync = false
+            target_clazz.actions << action_clazz
 
-
-          define_method(action.to_sym) do |params = {}, callbacks = {}|
-            action_clazz.prepare(params, callbacks)
-          end
-          define_method("#{action}!".to_sym) do |params = {}, callbacks = {}|
-            action_clazz.prepare(params, callbacks)
+            target_clazz.define_singleton_method(action.to_sym) do |params = {}, callbacks = {}|
+              action_clazz.new.prepare(params, callbacks)
+            end
+            target_clazz.define_singleton_method("#{action}!".to_sym) do |params = {}, callbacks = {}|
+              action_clazz.new.prepare(params, callbacks)
+            end
           end
         end
       end
