@@ -1,12 +1,13 @@
 require 'net/http'
 require 'active_support/core_ext'
 require 'active_support/inflector'
+require 'active_support/core_ext/hash/reverse_merge'
 require 'nori'
 require 'nokogiri'
-require 'active_support/core_ext/hash/reverse_merge'
-require 'arcus/helpers'
+require 'digest/md5'
 require 'logger'
 require 'json'
+require 'arcus/helpers'
 
 module Arcus
   Nori.parser = :nokogiri
@@ -255,7 +256,6 @@ module Arcus
           define_method("#{action}!".to_sym) do |params = {}, callbacks = {}|
             action_clazz.prepare(params, callbacks)
           end
-
         end
       end
     end
