@@ -4,7 +4,7 @@ require 'arcus/cli'
 require 'yaml'
 
 
-rc_file = "#{Dir.home}/.nimbusrc"
+rc_file = "#{Dir.home}/.arcusrc"
 $settings = {}
 if (File.exists? rc_file)
   $settings = YAML.load_file(rc_file)
@@ -16,13 +16,13 @@ def process_env(setting, key)
   end
 end
 
-process_env("api_uri", "NIMBUS_API_URI")
-process_env("default_response", "NIMBUS_DEFAULT_RESPONSE")
+process_env("api_uri", "ARCUS_API_URI")
+process_env("default_response", "ARCUS_DEFAULT_RESPONSE")
 
 error = if ! $settings.has_key? "api_uri"
-  "API URI must me set in either #{rc_file} or as a environmental variable (NIMBUS_API_URI)"
+  "API URI must me set in either #{rc_file} or as a environmental variable (ARCUS_API_URI)"
 elsif ! $settings.has_key? "default_response"
-  "Default response must me set in either #{rc_file} or as a environmental variable (NIMBUS_DEFAULT_RESPONSE)"
+  "Default response must me set in either #{rc_file} or as a environmental variable (ARCUS_DEFAULT_RESPONSE)"
 end
 
 if error
@@ -30,9 +30,9 @@ if error
   exit(false)
 end
 
-nimbus = Nimbus::Cli.new(
+arcus = Arcus::Cli.new(
     :api_uri => URI($settings["api_uri"]),
     :default_response => $settings["default_response"]
 )
 
-nimbus.run
+arcus.run
