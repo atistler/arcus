@@ -14,4 +14,9 @@ Gem::Specification.new do |gem|
   gem.name          = "arcus"
   gem.require_paths = ["lib"]
   gem.version       = Arcus::VERSION
+
+  gem.add_dependency "active_support"
+  gem.add_dependency "nori"
+  gem.add_dependency "nokogiri"
+  gem.add_dependency "cmdparse"
 end
