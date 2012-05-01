@@ -15,8 +15,10 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Arcus::VERSION
 
+  gem.add_dependency "i18n"
   gem.add_dependency "active_support"
   gem.add_dependency "nori"
   gem.add_dependency "nokogiri"
   gem.add_dependency "cmdparse"
+  gem.add_dependency "rspec"
 end

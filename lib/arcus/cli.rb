@@ -103,7 +103,7 @@ module Arcus
               begin
                 response_type = optional_params[:response] || Api.settings.default_response
                 if a.sync
-                  result = a.prepare(required_params.merge(optional_params)).fetch
+                  result = a.new.prepare(required_params.merge(optional_params)).fetch
                   job_id = result["#{a.name.downcase}response"]["jobid"]
                   job_finished = false
                   until job_finished

@@ -5,6 +5,9 @@ require 'active_support/core_ext/hash/reverse_merge'
 require 'nori'
 require 'nokogiri'
 require 'digest/md5'
+require 'base64'
+require 'cgi'
+require 'openssl'
 require 'logger'
 require 'json'
 require 'arcus/helpers'
@@ -46,13 +49,41 @@ module Arcus
     end
 
     class Request
-      attr_accessor :command_name, :params, :api_uri, :callbacks
+      attr_accessor :command_name, :params, :api_uri, :callbacks, :api_key, :api_secret
 
-      def initialize(command_name, params, api_uri, callbacks)
+      def initialize(command_name, params, callbacks)
         @command_name = command_name
         @params = params
-        @api_uri = api_uri
+        @api_uri = Api.settings.api_uri
+        @api_key = Api.settings.api_key
+        @api_secret = Api.settings.api_secret
         @callbacks = callbacks
+      end
+
+      def generate_signature(params, api_secret)
+        sorted_params = params.map { |k, v| [k, CGI.escape(v.to_s).gsub('+', '%20').downcase] }.sort_by { |key, value| key.to_s }
+        data = parameterize(sorted_params, false).downcase
+        hash = OpenSSL::HMAC.digest('sha1', api_secret, data)
+        Base64.encode64(hash).chomp
+      end
+
+      def parameterize(params, escape=true)
+        params = params.collect do |k, v|
+          if escape
+            "#{CGI.escape(k.to_s)}=#{CGI.escape(v.to_s)}"
+          else
+            "#{k}=#{v}"
+          end
+        end
+        params.join('&')
+      end
+
+      def generate_params_str(params, api_key = nil, api_secret = nil)
+        if api_key && api_secret
+          params[:apiKey] = @api_key
+          params[:signature] = generate_signature(params, api_secret)
+        end
+        parameterize(params)
       end
 
       def fetch(response_type = :object)
@@ -65,8 +96,14 @@ module Arcus
             end
         http = Net::HTTP.new(@api_uri.host, @api_uri.port)
         http.read_timeout = 5
-        http.open_timeout = 1
-        req_url = @api_uri.path + "?" + URI.encode_www_form(params.merge({:command => @command_name}))
+        http.open_timeout = 5
+
+        if @api_uri.scheme == "https"
+          http.use_ssl = true
+          http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        end
+        params = @params.merge({:command => @command_name})
+        req_url = @api_uri.path + "?" + generate_params_str(params, @api_key, @api_secret)
         Arcus.log.debug { "Sending: #{req_url}" } if Api.settings.verbose
         response = begin
           http.get(req_url)
@@ -249,16 +286,18 @@ module Arcus
 
               def prepare(params = {}, callbacks = {})
                 params[:response] ||= Api.settings.default_response
-                Request.new(self.name, params, Api.settings.api_uri, callbacks)
+                Request.new(self.name, params, callbacks)
               end
             end
             target_clazz.actions << action_clazz
 
-            target_clazz.define_singleton_method(action.to_sym) do |params = {}, callbacks = {}|
-              action_clazz.new.prepare(params, callbacks)
-            end
-            target_clazz.define_singleton_method("#{action}!".to_sym) do |params = {}, callbacks = {}|
-              action_clazz.new.prepare(params, callbacks)
+            target_clazz.instance_eval do
+              define_method(action.to_sym) do |params = {}, callbacks = {}|
+                  action_clazz.new.prepare(params, callbacks)
+              end
+              define_method("#{action}!".to_sym) do |params = {}, callbacks = {}|
+                  action_clazz.new.prepare(params, callbacks)
+              end
             end
           end
         end
