@@ -95,8 +95,8 @@ module Arcus
                 "xml"
             end
         http = Net::HTTP.new(@api_uri.host, @api_uri.port)
-        http.read_timeout = 5
-        http.open_timeout = 5
+        http.read_timeout = 30 
+        http.open_timeout = 30 
 
         if @api_uri.scheme == "https"
           http.use_ssl = true
