@@ -16,8 +16,8 @@ Gem::Specification.new do |gem|
   gem.version       = Arcus::VERSION
 
   gem.add_dependency "i18n"
-  gem.add_dependency "active_support"
-  gem.add_dependency "nori"
+  gem.add_dependency "activesupport"
+  gem.add_dependency "nori", "~> 1.1.4"
   gem.add_dependency "nokogiri"
   gem.add_dependency "cmdparse"
   gem.add_dependency "rspec"
