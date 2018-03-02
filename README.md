@@ -22,7 +22,7 @@ Cloudstack REST commands are read in from the commands.xml file.  This provides 
 for each Cloudstack command.  Each Cloudstack command is split up into an action and a target, for instance listVirtualMachines
 becomes: [action -> list, target -> VirtualMachine].  The arcus will create a dynamic class based on the name of the target and
 a method named after the action.  So you can do the following:
-
+```
 vms = VirtualMachine.new.list.fetch
 
 vms will be a object containing the results of "listvirtualmachinesresponse"
@@ -42,7 +42,7 @@ You can also give arguments to the "action" method.  For example:
 vms = VirtualMachine.new.list({id: 1}).fetch(:json)
 
 will produce the http call -> /client/api?id=1&response=xml&command=listVirtualMachines
-
+```
 
 ## Contributing
 
